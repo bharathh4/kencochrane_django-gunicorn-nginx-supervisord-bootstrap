@@ -23,7 +23,7 @@ def update_server():
             run('find -name "*.pyc" -delete')
             
             # restart the app
-            run("supervisorctl restart myapp")
+            run("supervisorctl restart my_app")
             
             # print status to make sure it restarted correctly
             run('supervisorctl status')
