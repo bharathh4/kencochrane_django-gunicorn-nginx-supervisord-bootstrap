@@ -8,7 +8,7 @@ yum -y install emacs readline-devel ncurses-devel libevent-devel glib2-devel lib
 # add a django user as a system user
 useradd -d /opt/django -m -r django
 
-# set password for django to what ever you want #djang0
+# set password for django to what ever you want.
 passwd django
 
 # setup directories.
@@ -123,8 +123,8 @@ hg clone https://bitbucket.org/kencochrane/django-gunicorn-nginx-supervisord-boo
 
 ln -s /opt/django/apps/my_app/v0.1 /opt/django/apps/my_app/current
 
-ln -s /opt/django/apps/my_app/current/my_app/conf/nginx.conf /opt/django/configs/nginx/risk.conf
-ln -s /opt/django/apps/my_app/current/my_app/conf/supervisor.conf /opt/django/configs/supervisord/risk.conf
+ln -s /opt/django/apps/my_app/current/my_app/conf/nginx.conf /opt/django/configs/nginx/myapp.conf
+ln -s /opt/django/apps/my_app/current/my_app/conf/supervisord.conf /opt/django/configs/supervisord/myapp.conf
 
 ####
 source /opt/django/apps/my_app/current/bin/activate
@@ -188,6 +188,18 @@ chown -R django:django /opt/django/*
 
 # switch to django user
 su - django
+
+#start up nginx
+service nginx start
+
+# startup supervisord
+service supervisord start
+
+# check supervisord status
+supervisorctl status
+
+# supervisorctl status
+# my_app                           RUNNING    pid 13594, uptime 0:00:05
 
 
 
