@@ -201,6 +201,7 @@ supervisorctl status
 # supervisorctl status
 # my_app                           RUNNING    pid 13594, uptime 0:00:05
 
+# goto the IP or domain name for your rackspace server and make sure it worked.
 
 
 
