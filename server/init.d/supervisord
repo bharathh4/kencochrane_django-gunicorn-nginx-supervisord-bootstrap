@@ -21,6 +21,8 @@ exec_prefix="${prefix}"
 prog_bin="${exec_prefix}/bin/supervisord"
 PIDFILE="/var/run/$prog.pid"
 
+export LD_LIBRARY_PATH=/usr/local/lib/:/usr/local/lib64/
+
 start()
 {
         echo -n $"Starting $prog: "

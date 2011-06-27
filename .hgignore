@@ -1,0 +1,8 @@
+syntax: glob
+*.pyc
+dist
+MANIFEST
+_build
+_static
+.DS_Store
+*~
