@@ -1,0 +1,195 @@
+# update packages
+yum -y update
+
+# install packages
+yum -y install emacs readline-devel ncurses-devel libevent-devel glib2-devel libjpeg-devel freetype-devel bzip2 bzip2-devel bzip2-libs openssl-devel pcre pcre-devel gpg make sqlite-devel gcc yum-utils unzip
+
+#########
+# add a django user as a system user
+useradd -d /opt/django -m -r django
+
+# set password for django to what ever you want #djang0
+passwd django
+
+# setup directories.
+
+mkdir -p /opt/django
+mkdir -p /opt/django/apps
+mkdir -p /opt/django/logs
+mkdir -p /opt/django/logs/nginx
+mkdir -p /opt/django/logs/apps
+mkdir -p /opt/django/configs
+mkdir -p /opt/django/scripts
+mkdir -p /opt/django/htdocs
+mkdir -p /opt/django/tmp
+mkdir -p /opt/django/configs/nginx
+mkdir -p /opt/django/configs/supervisord
+mkdir -p /opt/django/apps/my_app
+
+echo "<html><body>nothing here</body></html> " > /opt/django/htdocs/index.html
+
+# =======================================
+# Zlib
+# -----------
+# download from zlib.net
+mkdir -p /tmp/downloads
+cd /tmp/downloads
+wget http://www.zlib.net/zlib-1.2.5.tar.gz
+tar -xvzf zlib-1.2.5.tar.gz
+cd zlib-1.2.5
+./configure -s
+make install
+
+
+#----------------
+# install python 2.6.6
+#----------------
+mkdir -p /tmp/downloads
+cd /tmp/downloads
+wget http://www.python.org/ftp/python/2.6.6/Python-2.6.6.tgz
+tar -xvzf Python-2.6.6.tgz
+cd Python-2.6.6
+./configure --enable-shared
+make
+make altinstall
+
+##################################
+Add the following to /etc/profile
+#################################
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/:/usr/local/lib64/
+
+# source the new profile.
+source /etc/profile
+
+#----------------
+# install distribute
+#----------------
+mkdir -p /tmp/downloads
+cd /tmp/downloads
+curl -O http://python-distribute.org/distribute_setup.py
+python2.6 distribute_setup.py
+
+#----------------
+# install Pip & virtualenv
+#----------------
+mkdir -p /tmp/downloads
+cd /tmp/downloads
+curl -O -k https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+python2.6 get-pip.py
+pip install virtualenv
+
+#----------------
+# install supervisor
+#----------------
+pip install supervisor
+
+#-------------------
+# install mecurial
+#-------------------
+pip install mercurial
+
+
+
+################
+# install NGINX
+################
+mkdir -p /tmp/downloads
+cd /tmp/downloads
+wget http://nginx.org/download/nginx-1.0.4.tar.gz
+tar -xzvf nginx-1.0.4.tar.gz
+cd nginx-1.0.4
+./configure --sbin-path=/usr/local/sbin --with-http_ssl_module --with-http_stub_status_module
+make
+/etc/init.d/nginx stop
+sleep 2
+sudo make install
+sudo chmod +x /usr/local/sbin/nginx
+
+
+
+#----------------
+# install my app
+#----------------
+
+# add first virtualenv
+cd /opt/django/apps/my_app/
+virtualenv --distribute --no-site-packages v0.1
+
+# make this a post_create hook?
+touch /opt/django/apps/my_app/v0.1/.venv
+
+cd /opt/django/apps/my_app/v0.1/
+hg clone https://bitbucket.org/kencochrane/django-gunicorn-nginx-supervisord-bootstrap my_app
+
+ln -s /opt/django/apps/my_app/v0.1 /opt/django/apps/my_app/current
+
+ln -s /opt/django/apps/my_app/current/my_app/conf/nginx.conf /opt/django/configs/nginx/risk.conf
+ln -s /opt/django/apps/my_app/current/my_app/conf/supervisor.conf /opt/django/configs/supervisord/risk.conf
+
+####
+source /opt/django/apps/my_app/current/bin/activate
+cd /opt/django/apps/my_app/current/my_app/
+./bootstrap.py
+
+
+# as root
+mkdir -p /etc/nginx
+ln -s /opt/django/apps/my_app/current/my_app/server/etc/nginx.conf /etc/nginx/nginx.conf
+ln -s /usr/local/nginx/conf/mime.types /etc/nginx/mime.types
+ln -s /opt/django/apps/my_app/current/my_app/server/init.d/nginx /etc/init.d/nginx
+chmod 755 /etc/init.d/nginx 
+chkconfig --add nginx
+chkconfig nginx on
+
+ln -s /opt/django/apps/my_app/current/my_app/server/etc/supervisord.conf  /etc/supervisord.conf
+ln -s /opt/django/apps/my_app/current/my_app/server/init.d/supervisord /etc/init.d/supervisord
+chmod 755 /etc/init.d/supervisord
+chkconfig --add supervisord
+chkconfig supervisord on
+
+
+
+
+
+######################
+#FireWALL
+# http://cloudservers.rackspacecloud.com/index.php/Firewalls
+# http://cloudservers.rackspacecloud.com/index.php/Introduction_to_iptables
+# http://cloudservers.rackspacecloud.com/index.php/Sample_iptables_ruleset
+#####################
+# Open http port 80
+#
+iptables -I RH-Firewall-1-INPUT -p tcp --dport 80 -j ACCEPT
+
+
+#Make sure you add the homemade version of virtualenvwrapper to the .bashrc file
+
+emacs /opt/django/.bashrc
+-----
+# User specific aliases and functions
+has_virtualenv() {
+    if [ -e .venv ]; then
+        deactivate >/dev/null 2>&1
+        source bin/activate
+    fi
+}
+
+venv_cd () {
+    cd "$@" && has_virtualenv
+}
+
+alias cd="venv_cd"
+
+-------
+source /opt/django/.bashrc
+
+# change permissions of the django home directory to django, cleans up and left over root ownership
+chown -R django:django /opt/django/*
+
+# switch to django user
+su - django
+
+
+
+
+
