@@ -2,7 +2,8 @@
 yum -y update
 
 # install packages
-yum -y install emacs readline-devel ncurses-devel libevent-devel glib2-devel libjpeg-devel freetype-devel bzip2 bzip2-devel bzip2-libs openssl-devel pcre pcre-devel gpg make sqlite-devel gcc yum-utils unzip
+# you might not need all of these right now, but I normally need these down the line, so doing them all now.
+yum -y install emacs readline-devel ncurses-devel libevent-devel glib2-devel libjpeg-devel freetype-devel bzip2 bzip2-devel bzip2-libs openssl-devel pcre pcre-devel gpg make gcc yum-utils unzip
 
 #########
 # add a django user as a system user
@@ -89,7 +90,6 @@ pip install supervisor
 pip install mercurial
 
 
-
 ################
 # install NGINX
 ################
@@ -104,7 +104,6 @@ make
 sleep 2
 sudo make install
 sudo chmod +x /usr/local/sbin/nginx
-
 
 
 #----------------
@@ -146,9 +145,6 @@ ln -s /opt/django/apps/my_app/current/my_app/server/init.d/supervisord /etc/init
 chmod 755 /etc/init.d/supervisord
 chkconfig --add supervisord
 chkconfig supervisord on
-
-
-
 
 
 ######################
@@ -202,7 +198,3 @@ supervisorctl status
 # my_app                           RUNNING    pid 13594, uptime 0:00:05
 
 # goto the IP or domain name for your rackspace server and make sure it worked.
-
-
-
-
